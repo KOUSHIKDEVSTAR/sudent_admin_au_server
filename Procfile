@@ -1,1 +1,1 @@
-web: node ./bin/www_mega
+web: node ./bin/www
