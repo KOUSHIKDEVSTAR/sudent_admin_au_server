@@ -2,7 +2,7 @@ const mysql = require('mysql');
 const dbCon  = mysql.createConnection({
     user :'root',
     host : 'localhost',
-    password : '',
+    password : 'admin',
     database : 'mega_shop'
   })
   dbCon.connect( (error)=>{
