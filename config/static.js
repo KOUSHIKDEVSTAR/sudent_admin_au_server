@@ -12,6 +12,4 @@ const dbCon  = mysql.createConnection({
       console.log("MYSQL Connected....");
     }
    })
-
-
    module.exports = dbCon;
