@@ -1,13 +1,15 @@
 const mysql = require('mysql');
+/*LIVE*/
 const dbCon  = mysql.createConnection({
-  user :'sql12391021',
-  host : 'sql12.freemysqlhosting.net',
-  password : '2Z26HcPvmL',
-  database : 'sql12391021',
-  debug    :  true,
+  user :'uvkl3iwgrwdk5caf',
+  host : 'bpuoui6y5mdihzhpfuav-mysql.services.clever-cloud.com',
+  password : 'kjKh1ymarGlEmLVWHSxp',
+  database : 'bpuoui6y5mdihzhpfuav',
+  // debug    :  true,
   wait_timeout : 28800,
-  connect_timeout :10
+  connect_timeout :10000
   })
+
   dbCon.connect( (error)=>{
     if(error){
       console.log(error)

@@ -6,14 +6,22 @@ var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 const mysql = require('mysql');
 var indexRouter = require('./routes/index');
+var usersAdminRouter = require('./routes/users-admin');
+var studentRouter = require('./routes/student-admin');
+var foodCouponsRouter = require('./routes/food-coupons-admin');
+var jobPostRouter = require('./routes/job-post-admin');
+var categoryRouter = require('./routes/category-admin');
+var accomodationAdminRouter = require('./routes/accomodation-admin');
+var jobCategoryRouter = require('./routes/jobCategory-admin');
+// Import Routes/*==========FRONT==============*/ 
 var usersRouter = require('./routes/users');
-var studentRouter = require('./routes/student');
-var foodCouponsRouter = require('./routes/food-coupons');
-var jobPostRouter = require('./routes/job-post');
-var categoryRouter = require('./routes/category');
+var productsRouter = require('./routes/products');
+var authRouter = require('./routes/auth');
+var orderRouter = require('./routes/order');
 var accomodationRouter = require('./routes/accomodation');
-var jobCategoryRouter = require('./routes/jobCategory');
-
+var jobRouter = require('./routes/job');
+var vendorRouter = require('./routes/vendor');
+var imagesRouter = require('./routes/images');
 
 var app = express();
 
@@ -27,13 +35,22 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(cors());
 app.use('/', indexRouter);
-app.use('/users', usersRouter);
-app.use('/student', studentRouter);
-app.use('/food-coupons', foodCouponsRouter);
-app.use('/job-post', jobPostRouter);
-app.use('/category', categoryRouter);
-app.use('/accomodation', accomodationRouter);
-app.use('/job-category', jobCategoryRouter);
+app.use('/api/users-admin', usersAdminRouter);
+app.use('/api/student-admin', studentRouter);
+app.use('/api/food-coupons-admin', foodCouponsRouter);
+app.use('/api/job-post-admin', jobPostRouter);
+app.use('/api/category-admin', categoryRouter);
+app.use('/api/accomodation-admin', accomodationAdminRouter);
+app.use('/api/job-category-admin', jobCategoryRouter);
+/*==========FRONT==============*/ 
+app.use('/api/users', usersRouter);
+app.use('/api/products', productsRouter);
+app.use('/api/auth', authRouter);
+app.use('/api/orders', orderRouter);
+app.use('/api/accomodation', accomodationRouter);
+app.use('/api/job', jobRouter);
+app.use('/api/vendor', vendorRouter);
+app.use('/api/images', imagesRouter);
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
   next(createError(404));

@@ -20,6 +20,7 @@ router.get('/all-category',function(req,res,next) {
       }
     })
   })
+  
 
 /* GET users addUser. */
 
@@ -95,5 +96,22 @@ router.post('/addCategory', function(req, res, next) {
     
   })
 
-
+/*GET*/
+router.post('/studentcitylive',function(req,res,next) {
+  const student_city_live= req.body.student_city_live;
+  console.log(id);
+  dbCon.query('SELECT * FROM student_city_live WHERE student_city_live_id  = ?',[student_city_live],
+  async(error,result)=>{
+    if(error){
+      res.send({'code':400,'data':error})
+    }else{
+      if(result.length >0){
+        res.send({'code':200,'data':result})
+      }else{
+        res.send({'code':400})
+      }
+    }
+  })
+  
+})
   module.exports = router;

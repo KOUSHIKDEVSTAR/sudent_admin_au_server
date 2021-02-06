@@ -1,224 +1,101 @@
-var express = require('express');
-const { resource } = require('../app');
-const app = require('../app');
-const generateJwtToken = require('../config/jwt/genareteToken');
-const  dbCon  = require('../config/static');
-var router = express.Router();
-var bcrypt = require('bcrypt');
+const express = require('express');
+const router = express.Router();
+const {database} = require('../config/helpers');
 
-// app.use(express.json());
-/* GET users register. */
-
-router.post('/register', function(req, res, next) {
-  const email= req.body.email;
-  const password = req.body.password;
-  const first_name = req.body.first_name;
-  const last_name = req.body.last_name;
-  const mobile = req.body.mobile;
-  const role = req.body.role;
- 
-  dbCon.query('SELECT * FROM users WHERE email="'+email+'" ', (err, result) => {
-    if (err) throw err;
-    if (result.length>0){
-      res.send("201");
-    }
-    else{
-      
-      dbCon.query(
-        "INSERT INTO users (email,password,first_name,last_name,mobile,permissions) VALUES (?,?,?,?,?,?)",
-        [email, password,first_name,last_name,mobile,role],
-        (err,result)=>{
-          console.log(err);
-         
-          var insertId =result.insertId;
-          if(insertId != null){
-            dbCon.query('INSERT INTO role_users (user_id,role_id)  VALUES(?,?)',
-            [insertId,role])
-            console.log(result.insertId);
-            res.send('done');
-          }
-        })
-    
-    }
-  });
-  
-});
-/* GET users addUser. */
-
-router.post('/addUser', function(req, res, next) {
-  const email= req.body.email;
-  const password = req.body.password;
-  const first_name = req.body.first_name;
-  const last_name = req.body.last_name;
-  const mobile = req.body.mobile;
-  const role = req.body.role;
-  const address = req.body.address;
- 
-  dbCon.query('SELECT * FROM users WHERE email="'+email+'" ', (err, result) => {
-    if (err) throw err;
-    if (result.length>0){
-      res.send("201");
-    }
-    else{
-      
-      dbCon.query(
-        "INSERT INTO users (email,password,first_name,last_name,mobile,permissions) VALUES (?,?,?,?,?,?,?)",
-        [email, password,first_name,last_name,mobile,role,address],
-        (err,result)=>{
-          console.log(err);
-         
-          var insertId =result.insertId;
-          if(insertId != null){
-            dbCon.query('INSERT INTO role_users (user_id,role_id)  VALUES(?,?)',
-            [insertId,role])
-            console.log(result.insertId);
-            res.send('done');
-          }
-        })
-    
-    }
-  });
-  
-});
-/* GET users login. */
-
-router.post('/login', async function (req,res,next) {
-  // console.log('API');
-  const email= req.body.email;
-  const password = req.body.password;
-  // var hash = bcrypt.hashSync(password,10);
-//  console.log('email-api',email);
-    // console.log(dcryptPassword);
-  
-  dbCon.query('SELECT * FROM users WHERE email = ?  AND role = 777', [email], 
-  async(error, results)=> {
-    if (error) {
-      res.send(error);
-    }else{
-      if(results.length >0){
-        
-        dbCon.query('SELECT * FROM users WHERE email = ?', [email], 
-          async(err, resul)=> {
-            if (err) {
-              res.send(err);
-            }else{
-
-             
-              bcrypt.compare(password, resul[0].password, async(errss, resultss)=> {
-                
-                if(resultss===true){
-                  let token = await generateJwtToken({email});
-                  res.send({'code':200,'email':email,'id':resul[0].id, token,'permissions':1});
-                }else{
-                  res.send('400');
-                }
-              });
-              
-            }
-            })
-        
-
-      }else{
-        
-        res.send('400');
-      }
-    }
-    })
-})
 /* GET users listing. */
-
-router.get('/all-users',function(req,res,next) {
-  dbCon.query('SELECT * FROM users WHERE role = 666  ORDER BY id DESC',(error,result)=>{
-    if(error){
-      res.send(error);
-    }else{
-      res.send(
-        {
-          'code':200,
-          'data':result
+router.get('/', function (req, res) {
+    database.table('users')
+        .withFields([ 'username' , 'email', 'fname', 'lname', 'age', 'role', 'id' ])
+        .getAll().then((list) => {
+        if (list.length > 0) {
+            res.json({users: list});
+        } else {
+            res.json({message: 'NO USER FOUND'});
         }
-        );
+    }).catch(err => res.json(err));
+});
+
+/**
+ * ROLE 777 = ADMIN
+ * ROLE 555 = CUSTOMER
+ */
+
+
+/* GET ONE USER MATCHING ID */
+router.get('/:userId', (req, res) => {
+    let userId = req.params.userId;
+    database.table('users').filter({id: userId})
+        .withFields([ 'username' , 'email','fname', 'lname', 'age', 'role', 'id','' ])
+        .get().then(user => {
+        if (user) {
+            res.json({user});
+        } else {
+            res.json({message: `NO USER FOUND WITH ID : ${userId}`});
+        }
+    }).catch(err => res.json(err) );
+});
+
+/* GET ONE USER MATCHING ID */
+router.get('/email/:email', (req, res) => {
+    let email = req.params.email;
+    database.table('users').filter({email: email})
+        .withFields([ 'username' , 'email','fname', 'lname', 'phone', 'role', 'id','company_name' ])
+        .get().then(user => {
+           
+        if (user) {
+            res.json({user});
+        } else {
+            res.json({message: `NO USER FOUND WITH ID : ${email}`});
+        }
+    }).catch(err => res.json(err) );
+});
+
+/* GET ONE USER WITH EMAIL MATCH  */
+router.get('/validate/:email', (req, res) => {
+	
+	let email = req.params.email;
+	
+	database.table('users').filter({email: email})
+			.get()
+			.then(user => {
+				 if (user) {
+            res.json({user: user, status: true});
+        } else {
+            res.json({status: false, user: null});
+        }
+			})
+			.catch(err => res.json(err));
+	
+	
+});
+
+
+
+/* UPDATE USER DATA */
+router.patch('/:userId', async (req, res) => {
+    let userId = req.params.userId;     // Get the User ID from the parameter
+
+  // Search User in Database if any
+    let user = await database.table('users').filter({id: userId}).get();
+    if (user) {
+
+        let userEmail = req.body.email;
+        let userPassword = req.body.password;
+        let userFirstName = req.body.fname;
+        let userLastName = req.body.lname;
+        let userUsername = req.body.username;
+        let age = req.body.age;
+
+        // Replace the user's information with the form data ( keep the data as is if no info is modified )
+        database.table('users').filter({id: userId}).update({
+            email: userEmail !== undefined ? userEmail : user.email,
+            password: userPassword !== undefined ? userPassword : user.password,
+            username: userUsername !== undefined ? userUsername : user.username,
+            fname: userFirstName !== undefined ? userFirstName : user.fname,
+            lname: userLastName !== undefined ? userLastName : user.lname,
+            age: age !== undefined ? age : user.age
+        }).then(result => res.json('User updated successfully')).catch(err => res.json(err));
     }
-  })
-})
-/* GET users userdata. */
-
-router.post('/userdata',function(req,res,next) {
-  const id= req.body.id;
-  console.log(id);
-  dbCon.query('SELECT * FROM users WHERE id = ?',[id],
-  async(error,result)=>{
-    if(error){
-      res.send({'code':400,'data':error})
-    }else{
-      if(result.length >0){
-        res.send({'code':200,'data':result})
-      }else{
-        res.send({'code':400})
-      }
-    }
-  })
-  
-})
-/* GET users userdelete. */
-
-router.post('/userdelete',function(req,res,next) {
-  const id= req.body.id;
-  console.log(id);
-  dbCon.query('DELETE FROM users WHERE id=?',[id],
-  async(error,result)=>{
-    if(error){
-      res.send({'code':400,'data':error})
-    }else{
-      
-        res.send({'code':200})
-    }
-  })
-  
-})
-
-/* GET users userStatus. */
-
-router.post('/userStatus',function(req,res,next) {
-  const id= req.body.id;
-  const updated_at= new Date().toISOString();
-  
-  let sql = `UPDATE users SET status = '1',updated_at='${updated_at}' WHERE id = '${uId}'; `;
-  dbCon.query(sql,
-  async(error,result)=>{
-    if(error){
-      res.send({'code':400,'data':error})
-    }else{
-      
-        res.send({'code':200})
-      
-    }
-  })
-  
-})
-/* GET users profileEdit. */
-
-router.post('/profileEdit',function(req,res,next) {
-  const uId= req.body.id;
-  const address= req.body.address;
-  const first_name= req.body.first_name;
-  const last_name= req.body.last_name;
-  const mobile= req.body.mobile;
-  const updated_at= new Date().toISOString();
-  
-
-  let sql = `UPDATE users SET address = '${address}',first_name='${first_name}',last_name='${last_name}',mobile='${mobile}',updated_at='${updated_at}' WHERE id = '${uId}'; `;
-  dbCon.query(sql,
-  async(error,result)=>{
-    if(error){
-      res.send({'code':400,'data':error})
-    }else{
-      
-        res.send({'code':200})
-      
-    }
-  })
-  
-})
+});
 
 module.exports = router;
