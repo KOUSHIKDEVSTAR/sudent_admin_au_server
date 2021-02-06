@@ -24,7 +24,7 @@ router.get('/all-food-coupons',function(req,res,next) {
 /* GET users addUser. */
 
 router.post('/addFoodCoupons', function(req, res, next) {
-  // console.log(req.body);
+  console.log(req.body);
   const title= req.body.title;
   const description  = req.body.description ;
   const price = req.body.price; 
